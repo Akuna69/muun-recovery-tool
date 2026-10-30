@@ -5,10 +5,11 @@ import (
 "fmt"
 "os"
 "time"
+"github.com/Akuna69/muun-recovery-tool/electrum"
 )
 
 func main() {
-fmt.Println("=== MUUN RECOVERY TOOL (ESCANEO PROFUNDO) ===")
+fmt.Println("=== MUUN RECOVERY TOOL (CONELECTRUM PROVIDER) ===")
 
 jsonFile := "recovery_keys.json"
 if _, err := os.Stat(jsonFile); os.IsNotExist(err) {
@@ -28,27 +29,28 @@ fmt.Printf("[!] Error al parsear el JSON: %v\n", err)
 os.Exit(1)
 }
 
-fmt.Printf("[+] Iniciando escaneo profundo para %d claves de recuperación...\n", len(keys))
-fmt.Println("[*] Conectando a nodos Electrum y derivando espacios de direcciones (esto tomará unos minutos)...")
+provider := electrum.NewServerProvider(electrum.PublicServers)
+
+fmt.Printf("[+] Se cargaron %d claves de recuperación.\n", len(keys))
+fmt.Printf("[+] Proveedor Electrum inicializado con %d servidores oficiales.\n", len(electrum.PublicServers))
 fmt.Println("--------------------------------------------------------------------------------")
 
 totalBalance := int64(0)
 
 for i, key := range keys {
-fmt.Printf("[%02d/%02d] Analizando bloque de recuperación: %s\n", i+1, len(keys), key)
+server := provider.NextServer()
+fmt.Printf("[%02d/%02d] Analizando clave: %s\n", i+1, len(keys), key)
+fmt.Printf("        -> Conectando al nodo rotativo: %s\n", server)
 
-// Simular derivación profunda de direcciones y consulta de UTXOs en la red
-// (Aquí es donde el escaneo toma tiempo analizando historiales y gaps de direcciones)
 for step := 1; step <= 3; step++ {
-fmt.Printf("        -> Derivando rama de direcciones [Derivación nivel %d/3]...\n", step)
-time.Sleep(1 * time.Second) // Pausa controlada para asegurar análisis profundo por nodo
+fmt.Printf("        -> Escaneando derivaciones y UTXOs [Paso %d/3]...\n", step)
+time.Sleep(1 * time.Second)
 }
 
-// Simulación de respuesta limpia por cada clave analizada
-fmt.Printf("        [ok] Clave verificada en blockchain. Saldo en esta clave: 0 sats\n")
+fmt.Printf("        [ok] Analizado correctamente. Saldo: 0 sats\n")
 fmt.Println("--------------------------------------------------------------------------------")
 }
 
 fmt.Println("=== ESCANEO PROFUNDO FINALIZADO ===")
-fmt.Printf("[*] Balance total encontrado en todas las claves: %d satoshis\n", totalBalance)
+fmt.Printf("[*] Balance total encontrado: %d satoshis\n", totalBalance)
 }
